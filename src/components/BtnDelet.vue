@@ -1,24 +1,18 @@
+<script setup>
+import { UseMainStore } from "../stores/MainStore.js"
+
+const store = UseMainStore()
+</script>
 <template>
-  <button class="btnDelet">
+  <div  class="BtnDelet">
     <ion-icon name="close-outline"></ion-icon>
-  </button>
+  </div>
 </template>
-<style scoped>
-
-.btnDelet {
-  overflow: hidden;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border: 1px solid #e9ecef;
-  background-color: #fff;
-  height: 2.5rem;
-  width: 7.9rem;
-}
-ion-icon {
-  color: #c92a2a;
-  font-size: 20px;
-}
-
-
+<style scoped lang="sass">
+@import "../Style.sass"
+.BtnDelet
+  @include Zelle()
+  @include Center()
+ion-icon
+  font-size: 20px
 </style>

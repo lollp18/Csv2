@@ -1,17 +1,15 @@
 <template>
-  <div class="noTabel">
-    <p class="noTabel-text">Hir Erscheint ihr Table</p>
+  <div>
+    <p>Hir Erscheint ihr Table</p>
   </div>
 </template>
-<style scoped>
-.noTabel {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.noTabel-text {
-  font-size: xx-large;
-}
+<style scoped lang="sass">
+@import "../Style.sass"
+div
+  width: 100%
+  height: 100%
+  @include Center()
+
+p
+  font-size: xx-large
 </style>

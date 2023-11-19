@@ -10,39 +10,28 @@ export const UseMainStore = defineStore("csv", {
 
     CurrentTable: {
       TableName: "no Tabel",
-      TableData: [
+      TableData: new Map([
         [
-          { Activ: false, ZellenInhalt: "" },
-          { Activ: false, ZellenInhalt: "" },
-          { Activ: false, ZellenInhalt: "" },
-          { Activ: false, ZellenInhalt: "" },
-          { Activ: false, ZellenInhalt: "" },
-          { Activ: false, ZellenInhalt: "" },
-          { Activ: false, ZellenInhalt: "" },
-          { Activ: false, ZellenInhalt: "" },
+          1,
+          new Map([
+            [1, { Activ: false, ZellenInhalt: "" }],
+            [2, { Activ: false, ZellenInhalt: "" }],
+            [3, { Activ: false, ZellenInhalt: "" }],
+            [4, { Activ: false, ZellenInhalt: "" }],
+            [5, { Activ: false, ZellenInhalt: "" }],
+          ]),
         ],
         [
-          { Activ: false, ZellenInhalt: "" },
-          { Activ: false, ZellenInhalt: "" },
-          { Activ: false, ZellenInhalt: "" },
-          { Activ: false, ZellenInhalt: "" },
-          { Activ: false, ZellenInhalt: "" },
-          { Activ: false, ZellenInhalt: "" },
-          { Activ: false, ZellenInhalt: "" },
-          { Activ: false, ZellenInhalt: "" },
+          2,
+          new Map([
+            [1, { Activ: false, ZellenInhalt: "" }],
+            [2, { Activ: false, ZellenInhalt: "" }],
+            [3, { Activ: false, ZellenInhalt: "" }],
+            [4, { Activ: false, ZellenInhalt: "" }],
+            [5, { Activ: false, ZellenInhalt: "" }],
+          ]),
         ],
-
-        [
-          { Activ: false, ZellenInhalt: "" },
-          { Activ: false, ZellenInhalt: "" },
-          { Activ: false, ZellenInhalt: "" },
-          { Activ: false, ZellenInhalt: "" },
-          { Activ: false, ZellenInhalt: "" },
-          { Activ: false, ZellenInhalt: "" },
-          { Activ: false, ZellenInhalt: "" },
-          { Activ: false, ZellenInhalt: "" },
-        ],
-      ],
+      ]),
       LastZelle: {
         Zeile: 0,
         Spalten: 0,
@@ -78,6 +67,8 @@ export const UseMainStore = defineStore("csv", {
     //Tabelle bearbeiten
     TableBearbeitenOpen: false,
     TableBearbeiten: {
+      Error: undefined,
+
       Sections: {
         ZeileEinfügen: true,
         SpalteEinfügen: false,
@@ -117,7 +108,7 @@ export const UseMainStore = defineStore("csv", {
         },
       },
       ZeileTemp: {
-        zeilen: [],
+        zeile: new Map(),
         InsertPositon: undefined,
       },
       SpalteTemp: {
@@ -165,7 +156,7 @@ export const UseMainStore = defineStore("csv", {
 
       CurrentSeite: {
         Zahl: 1,
-        Start: 0,
+        Start: 1,
         Ende: undefined,
       },
     },
@@ -176,7 +167,22 @@ export const UseMainStore = defineStore("csv", {
       ApiUrlUserTabellen: undefined,
     },
   }),
-
+  getters: {
+    name: (state) => state,
+    FirstZeileLength: (state) => state.CurrentTable.TableData.get(1).size,
+    CurrentSeiteStart: (state) => state.SeitenVerwenden.CurrentSeite.Start,
+    CurrentSeiteEnde: (state) => state.SeitenVerwenden.CurrentSeite.Ende,
+    FirstZelleActive: (state) =>
+      state.CurrentTable.TableData.get(1).get(1).Activ,
+    FirstZelleZellenInhalt: (state) =>
+      state.CurrentTable.TableData.get(1).get(1).ZellenInhalt,
+    FirstZeile: (state) => state.CurrentTable.TableData.get(1),
+    CurrentTableLength: (state) => state.CurrentTable.TableData.size,
+    CurrentTableTableData: (state) => state.CurrentTable.TableData,
+    name: (state) => state,
+    name: (state) => state,
+    name: (state) => state,
+  },
   actions: {
     InitSeitenBerechnen() {
       this.SetTabelSize()
@@ -190,7 +196,7 @@ export const UseMainStore = defineStore("csv", {
 
     BrechneMax() {
       this.SeitenVerwenden.seitenLängeMax = Math.round(
-        (this.SeitenVerwenden.windowHeight - 300) /
+        (this.SeitenVerwenden.windowHeight - 200) /
           this.SeitenVerwenden.zellenWidth
       )
     },
@@ -208,7 +214,7 @@ export const UseMainStore = defineStore("csv", {
       this.SeitenVerwenden.currentSeiten = []
       const seiteErste = {
         Zahl: 1,
-        Start: 0,
+        Start: 1,
         Ende: this.SeitenVerwenden.seitenLängeMax - 1,
       }
       this.SeitenVerwenden.currentSeiten.push(seiteErste)
@@ -323,7 +329,7 @@ export const UseMainStore = defineStore("csv", {
 
       // save erste zelle temp
       temp =
-        this.CurrentTable.TableData[PositionErsteZelleZeile][
+        this.CurrentTable.TableData[Position.ErsteZelleZeile][
           Position.ErsteZelleSpalte
         ].ZellenInhalt
 
@@ -360,53 +366,83 @@ export const UseMainStore = defineStore("csv", {
     },
 
     ZeilenEinfügen() {
-      this.CreateZeile()
+      this.TableBearbeiten.Error = undefined
 
-      const zeilePos = state.bearbeiten.zeilen.zeilen - 1
-      if (zeilePos == 0 && state.bearbeiten.zeilen.position == "Ü") {
-        state.bearbeiten.ZeileTemp.zeilen.forEach((zeile) => {
-          state.currentTabelle.data.unshift(zeile)
-        })
-      } else if (
-        zeilePos == state.TabelenGröße.höhe - 1 &&
-        state.bearbeiten.zeilen.position == "U"
-      ) {
-        state.bearbeiten.ZeileTemp.zeilen.forEach((zeile) => {
-          state.currentTabelle.data.push(zeile)
-        })
-      } else {
-        Store.commit("GetIsertIndexZeile", zeilePos)
-        state.bearbeiten.ZeileTemp.zeilen.forEach((zeile) => {
-          state.currentTabelle.data.splice(
-            state.bearbeiten.ZeileTemp.InsertPositon,
-            0,
-            zeile
-          )
-        })
+      if (this.CheckZeile()) {
+        this.CreateZeile()
+
+        this.GetIsertIndexZeile()
+        this.InsetElenemtsZeile()
+        this.InitSeitenBerechnen()
       }
+    },
+    GetIsertIndexZeile() {
+      switch (this.TableBearbeiten.Einfügen.Zeilen.Position) {
+        case "Über":
+          this.TableBearbeiten.ZeileTemp.InsertPositon =
+            this.TableBearbeiten.Einfügen.Zeilen.Zeile - 1
+          break
+        case "Unter":
+          this.TableBearbeiten.ZeileTemp.InsertPositon =
+            this.TableBearbeiten.Einfügen.Zeilen.Zeile
+          break
+      }
+    },
+    InsetElenemtsZeile() {
+      let temp = this.CurrentTableTableData,
+        temp2 = new Map()
+
+      for (
+        let key = 1;
+        key <= this.TableBearbeiten.ZeileTemp.InsertPositon;
+        key++
+      ) {
+        temp2.set(key, temp.get(key))
+        temp.delete(key)
+      }
+
+      for (
+        let key = temp2.size + 1;
+        key <= this.TableBearbeiten.Einfügen.Zeilen.Anzahl;
+        key++
+      ) {
+        temp2.set(
+          key,
+          temp.get(key, this.TableBearbeiten.ZeileTemp.zeile.values)
+        )
+      }
+
+      temp.forEach((value) => {
+
+
+        
+      })
+      console.log(temp2)
     },
 
     CreateZeile() {
-      for (let i = 0; i < this.TableBearbeiten.Einfügen.Zeilen.Anzahl; i++) {
-        const zeile = []
-
-        this.TableBearbeiten.ZeileTemp.zeilen.push(zeile)
-
-        for (let i = 0; i < this.TabelenGröße.breite; i++) {
-          zeile.push(new Zelle(""))
-        }
+      for (let key = 1; key <= this.FirstZeileLength; key++) {
+        this.TableBearbeiten.ZeileTemp.zeile.set(key, new Zelle())
       }
     },
+    CheckZeile() {
+      switch (true) {
+        case this.TableBearbeiten.Einfügen.Zeilen.Zeile <= 0 ||
+          this.TableBearbeiten.Einfügen.Zeilen.Zeile > this.TabelenGröße.höhe:
+          this.TableBearbeiten.Error = "Diese Zeile ist nicht vorhanden"
 
-    GetIsertIndexZeile(state, pos) {
-      if (state.bearbeiten.zeilen.position == "Ü") {
-        state.bearbeiten.ZeileTemp.InsertPositon = pos
-      } else {
-        state.bearbeiten.ZeileTemp.InsertPositon = pos + 1
+          return false
+        case this.TableBearbeiten.Einfügen.Zeilen.Anzahl <= 0:
+          this.TableBearbeiten.Error = "Diese Anzahl ist nicht vorhanden"
+          return false
+        default:
+          return true
       }
     },
-    GetOptionZeile: (state, NewPosition) => {
-      state.bearbeiten.zeilen.position = NewPosition
+    GetOptionZeile(e) {
+      const Position = e.target.value
+
+      this.TableBearbeiten.Einfügen.Zeilen.Position = Position
     },
 
     ZeilenTauschenAufrufen() {
@@ -467,7 +503,7 @@ export const UseMainStore = defineStore("csv", {
       ) {
         for (let i = 0; i < state.bearbeiten.spalten.anzahl; i++) {
           state.currentTabelle.data.forEach((zeilen, i) => {
-            zeilen.push(new Zelle(""))
+            zeilen.push(new Zelle())
           })
         }
       } else {
@@ -477,7 +513,7 @@ export const UseMainStore = defineStore("csv", {
             zeilen.splice(
               state.bearbeiten.SpalteTemp.InsertPositon,
               0,
-              new Zelle("")
+              new Zelle()
             )
           })
         }
@@ -537,27 +573,48 @@ export const UseMainStore = defineStore("csv", {
     //Tabelle Löschen
 
     SpalteLöschen(Index) {
-      this.CurrentTable.TableData.forEach((zeile) => {
-        zeile.splice(Index, 1)
+      let temp,
+        Temp2,
+        NewKey = 0
+
+      temp = this.CurrentTable.TableData
+
+      for (let key = 1; key <= temp.size; key++) {
+        temp.get(key).delete(Index)
+      }
+      Temp2 = new Map()
+
+      temp.forEach((Zeile, ZeilenKey) => {
+        Temp2.set(ZeilenKey, new Map())
+
+        Zeile.forEach(({ ZellenInhalt, Activ }, zellenKey) => {
+          NewKey++
+          Temp2.get(ZeilenKey).set(NewKey, new Zelle(ZellenInhalt, Activ))
+        })
+        NewKey = 0
       })
+      console.log(Temp2)
+      this.CurrentTable.TableData = Temp2
     },
-    ZeileLöschen(Index) {
-      this.CurrentTable.TableData.splice(Index, 1)
+    ZeileLöschen(key) {
+      let temp,
+        NewKey = 0
+
+      temp = this.CurrentTable.TableData
+      temp.delete(key)
+      this.CurrentTable.TableData = new Map()
+      temp.forEach((zeile) => {
+        NewKey++
+        this.CurrentTable.TableData.set(NewKey, zeile)
+      })
     },
 
     // Uploade File
 
     CreateTabel() {
-      const data = []
-      this.UploadeFile.data.forEach((zeile) => {
-        const Tzeile = []
-        data.push(Tzeile)
-        zeile.forEach((item) => {
-          Tzeile.push(new Zelle(item))
-        })
-      })
+      const TableData = this.CreateTableData()
 
-      const Tabell = new Table(this.UploadeFile.fileName, data)
+      const Tabell = new Table(this.UploadeFile.fileName, TableData)
       this.CurrentTables.unshift(Tabell)
 
       this.CurrentTabelleID = 0
@@ -565,6 +622,35 @@ export const UseMainStore = defineStore("csv", {
       this.CurrentTable.TableData = Tabell.TableData
 
       console.log(this.CurrentTable)
+    },
+
+    CreateTableData() {
+      const TableData = new Map()
+
+      this.UploadeFile.data.forEach((Zeile, ZeileIndex) => {
+        const zeile = new Map()
+
+        TableData.set(ZeileIndex + 1, zeile)
+
+        Zeile.forEach((item, ZellenIndex) => {
+          zeile.set(ZellenIndex + 1, new Zelle(item.trim()))
+        })
+      })
+
+      return TableData
+    },
+
+    async GetFileData(e) {
+      const [File] = await e.target.files
+
+      this.UploadeFile.fileName = await File.name.slice(0, -4)
+
+      const content = await File.text()
+      const { data } = papa.parse(content)
+
+      this.UploadeFile.data = data
+
+      this.CreateTabel()
     },
 
     // Zellen bearbeiten
@@ -602,18 +688,18 @@ export const UseMainStore = defineStore("csv", {
       this.CurrentTable.CurrentZelle.ZellenInhalt = SelectetZelle.Zelleninhalt
     },
     SetFocusedZelle() {
-      this.CurrentTable.TableData[this.CurrentTable.CurrentZelle.Zeile][
+      this.CurrentTable.TableData.get(this.CurrentTable.CurrentZelle.Zeile).get(
         this.CurrentTable.CurrentZelle.Spalten
-      ].Activ = true
+      ).Activ = true
 
-      this.CurrentTable.TableData[this.CurrentTable.LastZelle.Zeile][
+      this.CurrentTable.TableData.get(this.CurrentTable.LastZelle.Zeile).get(
         this.CurrentTable.LastZelle.Spalten
-      ].Activ = false
+      ).Activ = false
     },
     SetZellenValue() {
-      this.CurrentTable.TableData[this.CurrentTable.CurrentZelle.Zeile][
+      this.CurrentTable.TableData.get(this.CurrentTable.CurrentZelle.Zeile).get(
         this.CurrentTable.CurrentZelle.Spalten
-      ].ZellenInhalt = this.CurrentTable.CurrentZelle.ZellenInhalt
+      ).ZellenInhalt = this.CurrentTable.CurrentZelle.ZellenInhalt
     },
 
     // selcet get set values
@@ -622,8 +708,8 @@ export const UseMainStore = defineStore("csv", {
         this.CurrentTable.TableName
     },
     SetTabelSize() {
-      this.TabelenGröße.höhe = this.CurrentTable.TableData.length
-      this.TabelenGröße.breite = this.CurrentTable.TableData[0].length
+      this.TabelenGröße.höhe = this.CurrentTable.TableData.size
+      this.TabelenGröße.breite = this.CurrentTable.TableData.get(1).size
     },
     GetSelectTabel(TableIndex) {
       this.CurrentTabelleID = TableIndex
@@ -700,31 +786,6 @@ export const UseMainStore = defineStore("csv", {
       } catch (e) {
         console.error(e.message)
       }
-    },
-
-    // Uploade File
-
-    HasTabels() {
-      if (this.CurrentTables.length == 0) {
-        this.tabelhidde = true
-        this.noTabelhidde = false
-      } else {
-        this.tabelhidde = false
-        this.noTabelhidde = true
-      }
-    },
-    async GetFileData(e) {
-      const [File] = await e.target.files
-      console.log(File)
-      this.UploadeFile.fileName = await File.name.slice(0, -4)
-
-      const content = await File.text()
-
-      const datas = papa.parse(content)
-
-      this.UploadeFile.data = datas.data
-
-      this.CreateTabel()
     },
 
     // Requests

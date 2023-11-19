@@ -18,12 +18,14 @@ export default {
         type="file"
         @change="store.GetFileData"
         accept=".csv" />
-      <button v-if="store.CurrentTables.length >= 1" @click="store.TableBearbeitenOpen = true">
+      <button
+        v-if="store.CurrentTables.length >= 1"
+        @click="store.TableBearbeitenOpen = true">
         <ion-icon name="create-outline"></ion-icon>
       </button>
 
       <button
-        class="btn"
+       
         v-show="store.ShowLogoutBTN"
         @click="store.Abmelden">
         Abmelden
@@ -49,74 +51,54 @@ export default {
     </div>
   </header>
 </template>
-<style scoped>
-button {
-  background-color: #fff;
-  padding: 1rem;
+<style scoped lang="sass">
 
-  border-radius: 10px;
+@import "../Style.sass"
+header
+  display: flex
+  flex-direction: column
 
-  box-shadow: 0 0 15px 4px rgba(0, 0, 0, 0.06);
-  border: 1px solid rgba(0, 0, 0, 0.119);
-}
-input {
-  padding: 0.7rem;
-  font-size: 1.5rem;
-  border-radius: 10px;
-  border: 0;
-  box-shadow: 0 0 15px 4px rgba(0, 0, 0, 0.06);
-  border: 1px solid rgba(0, 0, 0, 0.119);
-}
-ion-icon {
-  font-size: 20px;
-}
-/* --- Header --- */
-header {
-  display: flex;
-  flex-direction: column;
+  height: 12%
 
-  height: 15%;
-}
-nav {
-  padding: 1.5rem;
-  display: flex;
-  gap: 1rem;
-}
-.file-upload {
-  padding: 0;
-  font-size: none;
-  border-radius: none;
-  border: none;
-  box-shadow: none;
-  border: none;
-}
-.add-tabellEL {
-  height: 100%;
-}
+nav
+  padding: 1.5rem
+  display: flex
+  gap: 1rem
 
-.btn:link {
-  text-decoration: none;
-}
-::-webkit-file-upload-button {
-  background-color: #fff;
-  padding: 1rem;
+.file-upload
+  padding: 0
+  font-size: none
+  border-radius: none
+  border: none
+  box-shadow: none
+  border: none
 
-  border-radius: 10px;
+.add-tabellEL
+  height: 100%
 
-  box-shadow: 0 0 15px 4px rgba(0, 0, 0, 0.06);
-  border: 1px solid rgba(0, 0, 0, 0.119);
-}
+
+.btn:link
+  text-decoration: none
+
+::-webkit-file-upload-button
+  background-color: $MainColor
+  padding: 1rem
+
+  border-radius: 10px
+
+  box-shadow: 0 0 15px 4px $boxShadowColor
+  border: 1px solid $draggableBorderColor
+
 
 /* Tabel Header */
 
-.tabel-info {
-  display: flex;
-  gap: 1rem;
-}
-.tabel-name {
-  width: 10%;
-}
-.zellen-inhalt {
-  width: 90%;
-}
+.tabel-info
+  display: flex
+  gap: 1rem
+
+.tabel-name
+  width: 10%
+
+.zellen-inhalt
+  width: 90%
 </style>

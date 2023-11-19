@@ -12,55 +12,79 @@ export default {
   <router-view></router-view>
 </template>
 
-<style>
+<style lang="sass">
 /* --- Global Styls --- */
-:root {
-  --MainColor: #fff;
+@import "./Style.sass"
 
-  --SecondaryColor: #000;
+[name="close-outline"]
+  color: $InvalideCloseColor
 
-  --table-border-color: #e9ecef;
+ion-icon
+  font-size: 20px
 
-  --Invalide-CloseColor: #c92a2a;
-}
+input
+  @include Input()
 
-#app {
-  display: flex;
-  flex-direction: column;
+button
+  @include Button()
 
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-}
-html {
-  font-size: 62.5%;
-  overflow: hidden;
-  height: 100vh;
-}
+select
+  @include Select()
+
+h1
+  font-size: 2rem
+  font-weight: 600
+  font-family: "Roboto", sans-serif
+  color: #000
+  text-transform: uppercase
+  text-shadow: 1px 1px 1px rgba(16, 16, 16, 0.5)
+  text-shadow: 1px 1px 1px rgba(16, 16, 16, 0.4)
+  text-shadow: 1px 5px 10px rgba(16, 16, 16, 0.3)
+  text-shadow: 1px 10px 10px rgba(16, 16, 16, 0.2)
+
+.box
+  @include FelxColum()
+  @include Center()
+  gap: 2rem
+
+.BtnAddBearbeiten
+  @include Button()
+  margin-bottom: 2rem
+
+#app
+  display: flex
+  flex-direction: column
+  height: 100%
+  margin: 0
+  padding: 0
+  overflow: hidden
+  
+html
+  font-size: 62.5%
+  overflow: hidden
+  height: 100vh
+
 *,
 *::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+*::after
+  box-sizing: border-box
+  margin: 0
+  padding: 0
 
-body {
-  padding: 0;
-  margin: 0;
-  height: 100%;
-  overflow: hidden;
-  color: var(--SecondaryColor);
-  background: var(--MainColor);
-  transition: color 0.5s, background-color 0.5s;
-  line-height: 1.6;
-  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue",
-    sans-serif;
 
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+body
+  padding: 0
+  margin: 0
+  height: 100%
+  overflow: hidden
+  color: $SecondaryColor
+  background: $MainColor
+  transition: color 0.5s, background-color 0.5s
+  line-height: 1.6
+  font-family: Roboto
+  text-rendering: optimizeLegibility
+  -webkit-font-smoothing: antialiased
+  -moz-osx-font-smoothing: grayscale
+
+
 </style>

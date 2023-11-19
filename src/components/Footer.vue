@@ -16,14 +16,11 @@ export default {
     <div class="auswahl-container">
       <div
         class="auswahl-containerItem"
-        @click="store.GetSelectTabel(TableIndex)"
         v-for="({ TableName }, TableIndex) in CurrentTables"
         :key="i">
-        <p
-          style="font-size: 1.5rem"
-          :style="{ width: TableName.length - 2 + 'rem' }">
+        <button @click="store.GetSelectTabel(TableIndex)">
           {{ TableName }}
-        </p>
+        </button>
         <button
           class="BtnDeletTable"
           @click="store.InitDelet(TableIndex)">
@@ -77,73 +74,48 @@ export default {
     </div>
   </footer>
 </template>
-<style scoped>
-footer {
-  display: flex;
-  align-items: center;
-}
-button {
-  background-color: #fff;
-  padding: 1rem;
+<style scoped lang="sass">
 
-  border-radius: 10px;
+@import "../Style.sass"
+footer
+  display: flex
+  align-items: center
+  
 
-  box-shadow: 0 0 15px 4px rgba(0, 0, 0, 0.06);
-  border: 1px solid rgba(0, 0, 0, 0.119);
-}
-ion-icon {
-  font-size: 20px;
-}
-[name="close-outline"] {
-  color: #c92a2a;
-}
-[name="download-outline"] {
-  color: #22c55e;
-}
+ion-icon
+  font-size: 20px
 
-a {
-  background-color: #fff;
-  padding: 1rem;
 
-  border-radius: 10px;
+[name="download-outline"]
+  color: #22c55e
 
-  box-shadow: 0 0 15px 4px rgba(0, 0, 0, 0.06);
-  border: 1px solid rgba(0, 0, 0, 0.119);
-}
+a
+  @include Button()
 
-.auswahl-container {
-  gap: 1rem;
-  display: flex;
-  margin-left: 1rem;
-  background-color: var(--MainColor);
+.auswahl-container
+  gap: 1rem
+  display: flex
+  margin-left: 1rem
+  background-color: $MainColor
+  align-items: center
+  width: 90%
 
-  align-items: center;
-  width: 90%;
-}
-.auswahl-containerItem {
-  display: flex;
-  align-items: center;
-  border-radius: 10px;
 
-  padding: 0.5rem 1rem;
-  gap: 1rem;
-  box-shadow: 0 0 15px 4px rgba(0, 0, 0, 0.06);
-  border: 1px solid rgba(0, 0, 0, 0.119);
-}
+.auswahl-containerItem
+  @include Button()
+  gap: 1rem
+  padding: .5rem
+
 /* --- Seiten Wechseln --- */
 
-.seiten-rapper {
-  padding: 1rem 2rem;
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
-}
+.seiten-rapper
+  display: flex
+  justify-content: flex-end
+  gap: 0.5rem
 
-.zahl {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-font-size: 1.8rem;
- 
-}
+
+
+.zahl
+  @include Center()
+  font-size: 1.8rem
 </style>

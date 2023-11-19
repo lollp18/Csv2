@@ -1,5 +1,5 @@
 <script setup>
-import { UseMainStore } from "../stores/MainStore.js"
+import { UseMainStore } from "../stores/MainStore"
 import SpalteEinfügen from "./SpaltenEinfügen.vue"
 import SpalteTauschen from "./SpalteTauschen.vue"
 import ZeilenEinfügen from "./ZeilenEinfügen.vue"
@@ -72,7 +72,7 @@ export default {
         class="draggable-header">
         <div>
           <button @mousedown="dragMouseDown">
-            <ion-icon name="apps-outline"></ion-icon>
+            <ion-icon name="hand-right-outline"></ion-icon>
           </button>
           <button @click="store.OpenAside()">
             <ion-icon name="ellipsis-vertical-outline"></ion-icon>
@@ -116,67 +116,44 @@ export default {
   </div>
 </template>
 
-<style scoped>
-.menürapper {
-  position: relative;
-}
-aside {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  padding: 1rem;
-  position: absolute;
-}
+<style scoped lang="sass">
+@import "../Style.sass"
+.draggable-container
+  @include DreiD()
+  position: absolute
+  top: 50%
+  left: 50%
+  transform: translate(-50%, -50%)
+  display: flex
+  flex-direction: column
+  width: 30rem
+  gap: 1rem
+  z-index: 99
+  border-radius: 10px
+  background-color: $MainColor
 
-.draggable-container {
-  transform: translate(-50%, -50%);
+.menürapper
+  position: relative
 
-  width: 30rem;
- 
-}
-.draggable-header {
-  padding: 1rem;
-  gap: 12rem;
-  display: flex;
-  border-top-right-radius: 10px;
-  border-top-left-radius: 10px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.119);
-  justify-content: end;
-  width: 100%;
-  background-color: #fff;
-}
-.draggable-header button {
-  width: 5rem;
-}
+aside
+  @include FelxColum()
+  gap: 1.5rem
+  padding: 1rem
+  position: absolute
 
-.draggable-header div {
-  display: flex;
-  gap: 1rem;
-}
-.btnclose {
-  margin-right: 5px;
-  background-color: #fff;
-  border: none;
-  color: var(--Invalide-CloseColor);
-  border: 1px solid rgba(0, 0, 0, 0.119);
-}
+.draggable-header
+  display: flex
+  justify-content: end
+  width: 100%
+  gap: 15rem
+  padding: .5rem
+  border-top-right-radius: 10px
+  border-top-left-radius: 10px
+  border-bottom: 1px solid $draggableBorderColor
+  div
+   display: flex
+   gap: 1rem
 
-ion-icon {
-  font-size: 23px;
-}
-aside button {
-  font-size: 1.5rem;
-  width: 15rem;
-  font-size: 1.6rem;
-  border: 1px solid rgba(0, 0, 0, 0.119);
-}
-button {
-  background-color: #fff;
-  padding: 0.5rem;
-  font-size: 0.5rem;
-  width: 10rem;
-  border-radius: 10px;
-  border: 1px solid rgba(0, 0, 0, 0.119);
-  box-shadow: 0 0 15px 4px rgba(0, 0, 0, 0.06);
-}
+
+
 </style>
