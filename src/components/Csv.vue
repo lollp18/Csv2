@@ -10,16 +10,20 @@ import {
 } from "vue"
 
 const store = UseMainStore()
+store.$subscribe(async () => {
 
-onBeforeMount(() => {
-  store.GetTabels
+})
+onBeforeMount(async () => {
+  await store.CheckLogin()
+  await store.SetApiUrlUserTables()
+  await store.GetTabels()
 })
 
 onUpdated(() => {
   nextTick(() => {
-    store.SaveTabels
-
+    store.SaveTabels()
     store.InitSeitenBerechnen()
+    store.SetCurrentSeiteFirst()
   })
 })
 
@@ -42,9 +46,8 @@ onUnmounted(() => {
 <script>
 // Compnents
 
-import newTabel from "./NewTabel.vue"
+import NewTable from "./NewTable.vue"
 import Bearbeiten from "./Bearbeiten.vue"
-import ZellenTauschen from "./ZellenTauschen.vue"
 import Header from "./Header.vue"
 import Table from "./Table.vue"
 import NoTable from "./NoTable.vue"
@@ -55,23 +58,6 @@ import Footer from "./Footer.vue"
 import { ref } from "vue"
 
 export default {
-  components: {
-    newTabel,
-    Bearbeiten,
-    ZellenTauschen,
-  },
-  computed: {},
-  data() {
-    return {
-      darkMode: false,
-
-      tabelhidde: true,
-      noTabelhidde: false,
-      newTabelopen: ref(false),
-      Tbearbeiten: ref(false),
-      ZellenTauschen: ref(false),
-    }
-  },
   methods: {
     // check and set
 
@@ -83,16 +69,14 @@ export default {
 </script>
 
 <template>
-  <bearbeiten v-show="store.TableBearbeitenOpen" />
-  <newTabel
-    :open="newTabelopen"
-    @close="newTabelopen = false" />
+  <Bearbeiten v-if="store.TableBearbeitenOpen" />
+  <NewTable v-if="store.NewTableIsOpen" />
 
   <Header />
   <NoTable v-if="store.CurrentTables.length == 0" />
 
   <Table v-if="store.CurrentTables.length >= 1" />
-  <Footer v-if="store.CurrentTables.length >= 1"></Footer>
+  <Footer v-if="store.CurrentTables.length >= 1" />
 </template>
 
 <style scoped lang="sass">

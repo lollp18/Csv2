@@ -1,15 +1,9 @@
 <script setup>
 import { UseMainStore } from "../stores/MainStore.js"
-import BtnDelet from "./BtnDelet.vue"
+
 const store = UseMainStore()
 </script>
-<script>
-export default {
-  components: {
-    BtnDelet,
-  },
-}
-</script>
+
 <template>
   <header>
     <nav>
@@ -21,11 +15,10 @@ export default {
       <button
         v-if="store.CurrentTables.length >= 1"
         @click="store.TableBearbeitenOpen = true">
-        <ion-icon name="create-outline"></ion-icon>
+        <ion-icon name="pencil-outline"></ion-icon>
       </button>
 
       <button
-       
         v-show="store.ShowLogoutBTN"
         @click="store.Abmelden">
         Abmelden
@@ -38,7 +31,7 @@ export default {
       <input
         @input="store.SetCurrentTabelName()"
         class="tabel-name"
-        placeholder="Tabellenname"
+        placeholder="Tablename"
         v-model="store.CurrentTable.TableName" />
       <input
         class="zellen-inhalt"
@@ -57,7 +50,6 @@ export default {
 header
   display: flex
   flex-direction: column
-
   height: 12%
 
 nav

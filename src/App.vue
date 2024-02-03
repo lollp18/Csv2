@@ -80,7 +80,7 @@ body
   color: $SecondaryColor
   background: $MainColor
   transition: color 0.5s, background-color 0.5s
-  line-height: 1.6
+
   font-family: Roboto
   text-rendering: optimizeLegibility
   -webkit-font-smoothing: antialiased

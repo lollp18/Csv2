@@ -2,7 +2,6 @@
 import { UseMainStore } from "../stores/MainStore.js"
 import BtnDelet from "./BtnDelet.vue"
 const store = UseMainStore()
-const { CurrentTables } = UseMainStore()
 </script>
 <script>
 export default {
@@ -16,26 +15,27 @@ export default {
     <div class="auswahl-container">
       <div
         class="auswahl-containerItem"
-        v-for="({ TableName }, TableIndex) in CurrentTables"
-        :key="i">
+        v-for="({ TableName }, TableIndex) in store.CurrentTables"
+        :key="TableIndex">
         <button @click="store.GetSelectTabel(TableIndex)">
           {{ TableName }}
         </button>
         <button
           class="BtnDeletTable"
-          @click="store.InitDelet(TableIndex)">
-          <ion-icon name="close-outline"></ion-icon></button
-        ><a
+          @click="store.DeletTable(TableIndex)">
+          <ion-icon name="close-outline"></ion-icon>
+        </button>
+        <a
           class="BtnDownload"
           @click="store.mDownlodFile(TableIndex)"
           :href="store.DownloadFile.Href"
-          :download="TableName"
-          ><ion-icon name="download-outline"></ion-icon
-        ></a>
+          :download="TableName">
+          <ion-icon name="download-outline"></ion-icon>
+        </a>
       </div>
       <button
         class="btn"
-        @click="newTabelopen = true">
+        @click="store.NewTableIsOpen = true">
         <ion-icon name="add-outline"></ion-icon>
       </button>
     </div>
@@ -77,10 +77,15 @@ export default {
 <style scoped lang="sass">
 
 @import "../Style.sass"
+
 footer
   display: flex
   align-items: center
-  
+  height: 7%
+  width: 100%
+  background-color: $MainColor
+  @include Border
+
 
 ion-icon
   font-size: 20px
@@ -91,6 +96,8 @@ ion-icon
 
 a
   @include Button()
+
+
 
 .auswahl-container
   gap: 1rem
@@ -105,6 +112,9 @@ a
   @include Button()
   gap: 1rem
   padding: .5rem
+
+
+
 
 /* --- Seiten Wechseln --- */
 

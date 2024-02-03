@@ -10,19 +10,9 @@ import {
 import { UseMainStore } from "../stores/MainStore.js"
 import BtnDelet from "./BtnDelet.vue"
 const store = UseMainStore()
-onUpdated(() => {
-  nextTick(() => {
-    store.InitSeitenBerechnen()
-  })
-})
+
 </script>
-<script>
-export default {
-  components: {
-    BtnDelet,
-  },
-}
-</script>
+
 <template>
   <table>
     <tr>
@@ -83,8 +73,10 @@ export default {
         <div class="t-header">
           <div
             ref="zelle"
-            :class="FirstZelleActive ? 'zelle-activ' : 'zelle'"
-            @click="store.InitZelleBerarbeiten(1, 1, FirstZelleZellenInhalt)">
+            :class="store.FirstZelleActive ? 'zelle-activ' : 'zelle'"
+            @click="
+              store.InitZelleBerarbeiten(1, 1, store.FirstZelleZellenInhalt)
+            ">
             {{ store.FirstZelleZellenInhalt }}
           </div>
           <div
@@ -135,22 +127,18 @@ export default {
       <!-- Tabel Seitenleiste  Data-->
       <td>
         <div
-          v-for="([_, zellen], ZeileIndex) in store.CurrentTableTableData"
-          :key="ZeileIndex">
-          <div v-if="ZeileIndex != 0">
+          v-for="[ZeilenKey, Zellen] in store.CurrentTableTableData"
+          :key="ZeilenKey">
+          <div v-if="ZeilenKey != 1">
             <div
-              v-for="[ZellenIndex, { ZellenInhalt, Activ }] in zellen"
-              :key="ZeileIndex">
+              v-for="[ZellenKey, { ZellenInhalt, Activ }] in Zellen"
+              :key="ZellenKey">
               <div
                 :class="Activ ? 'zelle-activ' : 'zelle'"
                 @click="
-                  store.InitZelleBerarbeiten(
-                    ZeileIndex,
-                    ZellenIndex,
-                    ZellenInhalt
-                  )
+                  store.InitZelleBerarbeiten(ZeilenKey, ZellenKey, ZellenInhalt)
                 "
-                v-if="ZellenIndex < 2">
+                v-if="ZellenKey < 2">
                 {{ ZellenInhalt }}
               </div>
             </div>
@@ -160,27 +148,23 @@ export default {
       <!-- Tabel Body Data -->
       <td class="t-body">
         <div
-          v-for="([_, zellen], ZeileIndex) in store.CurrentTableTableData"
-          :key="ZeileIndex">
+          v-for="[ZeilenKey, Zellen] in store.CurrentTableTableData"
+          :key="ZeilenKey">
           <div
             class="zeile"
-            v-if="ZeileIndex != 0">
+            v-if="ZeilenKey != 1">
             <div
-              v-for="[ZellenIndex, { ZellenInhalt, Activ }] in zellen"
-              :key="ZeileIndex">
+              v-for="[ZellenKey, { ZellenInhalt, Activ }] in Zellen"
+              :key="ZellenKey">
               <div
                 :class="Activ ? 'zelle-activ' : 'zelle'"
                 @click="
-                  store.InitZelleBerarbeiten(
-                    ZeileIndex,
-                    ZellenIndex,
-                    ZellenInhalt
-                  )
+                  store.InitZelleBerarbeiten(ZeilenKey, ZellenKey, ZellenInhalt)
                 "
                 v-if="
-                  ZellenIndex > 1 &&
-                  ZellenIndex >= store.CurrentSeiteStart &&
-                  ZellenIndex <= store.CurrentSeiteEnde
+                  ZellenKey > 1 &&
+                  ZellenKey >= store.CurrentSeiteStart &&
+                  ZellenKey <= store.CurrentSeiteEnde
                 ">
                 {{ ZellenInhalt }}
               </div>
@@ -202,10 +186,11 @@ export default {
   @include FelxColum()
 
 table
-  @include DreiD()
   @include FelxColum()
+  border-top: 1px solid $MainBorderColor
+
   border-collapse: collapse
-  height: 77.7rem
+  height:82%
   font: 11pt Calibri, Segoe UI, Calibri, Thonburi, Arial, Verdana, sans-serif,Mongolian Baiti, Microsoft Yi Baiti, Javanese Text
 
 

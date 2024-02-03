@@ -30,7 +30,7 @@ export default {
         placeholder="Passwort" />
 
       <button
-        @click.prevent="store.mAnmelden"
+        @click.prevent="store.mAnmelden()"
         class="btn font">
         Anmelden
       </button>

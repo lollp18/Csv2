@@ -2,49 +2,14 @@ import { defineStore } from "pinia"
 import axios from "axios"
 import router from "../router/index.js"
 import { Table, Zelle } from "../components/Classes.js"
-
+import { nextTick } from "vue"
 import papa from "papaparse"
 export const UseMainStore = defineStore("csv", {
   state: () => ({
     UserData: undefined,
 
-    CurrentTable: {
-      TableName: "no Tabel",
-      TableData: new Map([
-        [
-          1,
-          new Map([
-            [1, { Activ: false, ZellenInhalt: "" }],
-            [2, { Activ: false, ZellenInhalt: "" }],
-            [3, { Activ: false, ZellenInhalt: "" }],
-            [4, { Activ: false, ZellenInhalt: "" }],
-            [5, { Activ: false, ZellenInhalt: "" }],
-          ]),
-        ],
-        [
-          2,
-          new Map([
-            [1, { Activ: false, ZellenInhalt: "" }],
-            [2, { Activ: false, ZellenInhalt: "" }],
-            [3, { Activ: false, ZellenInhalt: "" }],
-            [4, { Activ: false, ZellenInhalt: "" }],
-            [5, { Activ: false, ZellenInhalt: "" }],
-          ]),
-        ],
-      ]),
-      LastZelle: {
-        Zeile: 0,
-        Spalten: 0,
-        ZellenInhalt: "",
-        Activ: false,
-      },
-      CurrentZelle: {
-        Zeile: undefined,
-        Spalten: undefined,
-        ZellenInhalt: "",
-        Activ: false,
-      },
-    },
+    CurrentTable: undefined,
+
     CurrentTables: [],
     CurrentTabelleID: undefined,
 
@@ -81,7 +46,7 @@ export const UseMainStore = defineStore("csv", {
       Einfügen: {
         Zeilen: {
           Zeile: undefined,
-          Position: "Ü",
+          Position: "Über",
           Anzahl: undefined,
         },
         Spalten: { Spalte: undefined, Position: "L", Anzahl: undefined },
@@ -108,7 +73,7 @@ export const UseMainStore = defineStore("csv", {
         },
       },
       ZeileTemp: {
-        zeile: new Map(),
+        zeile: [],
         InsertPositon: undefined,
       },
       SpalteTemp: {
@@ -118,13 +83,12 @@ export const UseMainStore = defineStore("csv", {
     },
 
     // Neue Tabelle erstellen
-
-    newTabell: {
-      name: "",
-      zeilen: undefined,
-      spalten: undefined,
-      data: [],
-      checkTabellName: false,
+    NewTableIsOpen: false,
+    NewTable: {
+      Error: undefined,
+      TableName: "",
+      AnzahlZeilen: undefined,
+      AnzahlSpalten: undefined,
     },
 
     // Registrieren
@@ -138,7 +102,7 @@ export const UseMainStore = defineStore("csv", {
     // Login
 
     Anmelden: {
-      Email: "lorenzo123696@gmail.com",
+      Email: "Lorenzo123696@gmail.com",
       Passwort: "123",
     },
     AnmeldenCheck: undefined,
@@ -164,7 +128,12 @@ export const UseMainStore = defineStore("csv", {
     ApiURLs: {
       ApiUrlUsersRegistrieren: "http://localhost:8080/auth/registrieren",
       ApiUrlUsersAnmelden: "http://localhost:8080/auth/login",
-      ApiUrlUserTabellen: undefined,
+      ApiUrlUserTablen: undefined,
+      ApiUrlDeletTable: undefined,
+      requestOptions: {
+        withCredentials: true,
+        baseURL: "http://localhost:8080",
+      },
     },
   }),
   getters: {
@@ -179,7 +148,7 @@ export const UseMainStore = defineStore("csv", {
     FirstZeile: (state) => state.CurrentTable.TableData.get(1),
     CurrentTableLength: (state) => state.CurrentTable.TableData.size,
     CurrentTableTableData: (state) => state.CurrentTable.TableData,
-    name: (state) => state,
+    CurrentTablesLength: (state) => state,
     name: (state) => state,
     name: (state) => state,
   },
@@ -267,84 +236,105 @@ export const UseMainStore = defineStore("csv", {
         ]
     },
 
-    // Tabelle erstellen
+    //Create new Table
 
-    InserteNewTabellTabel(state) {
-      const Tabell = new Table(state.newTabell.name, state.newTabell.data)
+    CreateNewTable() {
+      const { AnzahlSpalten, AnzahlZeilen, TableName } = this.NewTable
 
-      state.currentTabelles.unshift(Tabell)
-
-      state.currentTabelle.TabelName = Tabell.TabelName
-
-      state.currentTabelle.data = Tabell.data
-    },
-    CreateNewTabellData(state) {
-      state.newTabell.data = []
-      for (let i = 1; i <= state.newTabell.zeilen; i++) {
-        const zeile = []
-        state.newTabell.data.push(zeile)
-        for (let I = 1; I <= state.newTabell.spalten; I++) {
-          zeile.push(new Zelle(""))
-        }
+      if (this.CheckNewTable()) {
+        const NewTable = new Table(TableName)
+        NewTable.GenerateTableData(AnzahlZeilen, AnzahlSpalten)
+        this.CurrentTables.push(NewTable)
+        this.GetSelectTabel(this.CurrentTables.length - 1)
+        this.NewTableIsOpen = false
       }
     },
-    ChecknewTabellName(state) {
-      state.currentTabelles.forEach((tabell) => {
-        if (tabell.TabelName === state.newTabell.name) {
-          state.newTabell.checkTabellName = true
-        } else {
-          state.newTabell.checkTabellName = false
-        }
-      })
-    },
+    CheckNewTable() {
+      const { AnzahlSpalten, AnzahlZeilen } = this.NewTable
+      let CheckOk = false
 
+      const CheckNewTableName = this.CurrentTables.some(
+        (Table) => Table.TableName == this.NewTable.TableName
+      )
+      const CheckSpalte = AnzahlSpalten <= 0
+      const CheckZeilen = AnzahlZeilen <= 0
+      CheckNewTableName
+        ? (this.NewTable.Error = "Diesen Name ist Vergeben")
+        : CheckSpalte
+        ? (this.NewTable.Error = "Spalten anzahl zu Klein")
+        : CheckZeilen
+        ? (this.NewTable.Error = "Zeilen anzahl zu Klein")
+        : (CheckOk = true)
+
+      return CheckOk
+    },
     // Tabelle bearbeiten
 
     // Zellen tauschen
     ZellenTauschenAufrufen() {
+      this.SetAllSectonsFalse()
       this.TableBearbeiten.Sections.ZellenTauschen = true
-      this.TableBearbeiten.Sections.SpalteTauschen = false
-      this.TableBearbeiten.Sections.ZeileTauschen = false
-      this.TableBearbeiten.Sections.ZeileEinfügen = false
-      this.TableBearbeiten.Sections.SpalteEinfügen = false
-
-      this.TableBearbeiten.Sections.Aside = false
     },
-    ZellenTauschen() {
-      let temp = ""
+    CheckZellenTauschen() {
+      const { ErsteZelle, ZweiteZelle } = this.TableBearbeiten.ZellenTauschen
+      const { höhe, breite } = this.TabelenGröße
+      let error = ""
 
-      const Position = {
-        ErsteZelleZeile:
-          this.TableBearbeiten.ZellenTauschen.ErsteZelle.Zeile - 1,
+      const sindZellenVorhanden =
+        ErsteZelle.Spalte >= 1 &&
+        ErsteZelle.Zeile >= 1 &&
+        ZweiteZelle.Spalte >= 1 &&
+        ZweiteZelle.Zeile >= 1
 
-        ErsteZelleSpalte:
-          this.TableBearbeiten.ZellenTauschen.ErsteZelle.Spalte - 1,
+      const sindZellenInTabelle =
+        ErsteZelle.Spalte <= höhe &&
+        ErsteZelle.Zeile <= höhe &&
+        ZweiteZelle.Spalte <= breite &&
+        ZweiteZelle.Zeile <= breite
 
-        ZweiteZelleSpalte:
-          this.TableBearbeiten.ZellenTauschen.ZweiteZelle.Spalte - 1,
+      const sindZellenVerschieden =
+        ErsteZelle.Spalte !== ZweiteZelle.Spalte ||
+        ErsteZelle.Zeile !== ZweiteZelle.Zeile
 
-        ZweiteZelleZeile:
-          this.TableBearbeiten.ZellenTauschen.ZweiteZelle.Zeile - 1,
+      if (!sindZellenVorhanden) {
+        error = "Diese Zelle ist nicht vorhanden"
+      } else if (!sindZellenInTabelle) {
+        error = "Diese Zelle befindet sich nicht in der Tabelle"
+      } else if (!sindZellenVerschieden) {
+        error = "Diese Zellen sind identisch"
       }
 
-      // save erste zelle temp
-      temp =
-        this.CurrentTable.TableData[Position.ErsteZelleZeile][
-          Position.ErsteZelleSpalte
-        ].ZellenInhalt
+      this.TableBearbeiten.Error = error
 
-      // erste zelle mit zweiter zelle ersetzen
-      this.CurrentTable.TableData[Position.ErsteZelleZeile][
-        Position.ErsteZelleSpalte
-      ].ZellenInhalt =
-        this.CurrentTable.TableData[Position.ZweiteZelleZeile][
-          Position.ZweiteZelleSpalte
-        ].ZellenInhalt
+      return sindZellenVorhanden && sindZellenInTabelle && sindZellenVerschieden
+    },
 
-      // zweite zelle mit temp ersetzen
-      this.CurrentTable.TableData[Position.ZweiteZelleZeile][
-        Position.ZweiteZelleSpalte
-      ].ZellenInhalt = temp
+    ZellenTauschen() {
+      if (this.CheckZellenTauschen()) {
+        this.InitZeilenTauschen()
+      }
+    },
+    InitZellenTauschen() {
+      const { ErsteZelle, ZweiteZelle } = this.TableBearbeiten.ZellenTauschen
+      let temp = ""
+
+      const ZellenInaltErste = this.CurrentTableTableData.get(
+        ErsteZelle.Zeile
+      ).get(ErsteZelle.Spalte).ZellenInhalt
+
+      const ZellenInaltZweite = this.CurrentTableTableData.get(
+        ZweiteZelle.Zeile
+      ).get(ZweiteZelle.Spalte).ZellenInhalt
+
+      temp = ZellenInaltErste
+
+      this.CurrentTable.TableData.get(ErsteZelle.Zeile).get(
+        ErsteZelle.Spalte
+      ).ZellenInhalt = ZellenInaltZweite
+
+      this.CurrentTable.TableData.get(ZweiteZelle.Zeile).get(
+        ZweiteZelle.Spalte
+      ).ZellenInhalt = temp
     },
     OpenAside() {
       if (this.TableBearbeiten.Sections.Aside) {
@@ -357,12 +347,8 @@ export const UseMainStore = defineStore("csv", {
     //Zeilen bearbeiten
 
     ZeilenEinfügenAufrufen() {
+      this.SetAllSectonsFalse()
       this.TableBearbeiten.Sections.ZeileEinfügen = true
-      this.TableBearbeiten.Sections.SpalteTauschen = false
-      this.TableBearbeiten.Sections.SpalteEinfügen = false
-      this.TableBearbeiten.Sections.ZeileTauschen = false
-      this.TableBearbeiten.Sections.ZellenTauschen = false
-      this.TableBearbeiten.Sections.Aside = false
     },
 
     ZeilenEinfügen() {
@@ -377,14 +363,13 @@ export const UseMainStore = defineStore("csv", {
       }
     },
     GetIsertIndexZeile() {
-      switch (this.TableBearbeiten.Einfügen.Zeilen.Position) {
+      const { Zeile, Position } = this.TableBearbeiten.Einfügen.Zeilen
+      switch (Position) {
         case "Über":
-          this.TableBearbeiten.ZeileTemp.InsertPositon =
-            this.TableBearbeiten.Einfügen.Zeilen.Zeile - 1
+          this.TableBearbeiten.ZeileTemp.InsertPositon = Zeile - 1
           break
         case "Unter":
-          this.TableBearbeiten.ZeileTemp.InsertPositon =
-            this.TableBearbeiten.Einfügen.Zeilen.Zeile
+          this.TableBearbeiten.ZeileTemp.InsertPositon = Zeile
           break
       }
     },
@@ -392,47 +377,49 @@ export const UseMainStore = defineStore("csv", {
       let temp = this.CurrentTableTableData,
         temp2 = new Map()
 
-      for (
-        let key = 1;
-        key <= this.TableBearbeiten.ZeileTemp.InsertPositon;
-        key++
-      ) {
-        temp2.set(key, temp.get(key))
-        temp.delete(key)
-      }
-
-      for (
-        let key = temp2.size + 1;
-        key <= this.TableBearbeiten.Einfügen.Zeilen.Anzahl;
-        key++
-      ) {
-        temp2.set(
-          key,
-          temp.get(key, this.TableBearbeiten.ZeileTemp.zeile.values)
-        )
-      }
-
-      temp.forEach((value) => {
-
-
-        
+      temp.forEach((Zellen, ZeilenKey) => {
+        if (ZeilenKey <= this.TableBearbeiten.ZeileTemp.InsertPositon) {
+          temp2.set(ZeilenKey, Zellen)
+          temp.delete(ZeilenKey)
+        }
       })
-      console.log(temp2)
+
+      this.TableBearbeiten.ZeileTemp.zeile.forEach((Zellen) => {
+        temp2.set(temp2.size + 1, Zellen)
+      })
+
+      temp.forEach((Zellen) => {
+        temp2.set(temp2.size + 1, Zellen)
+      })
+
+      this.CurrentTable.TableData = temp2
     },
 
     CreateZeile() {
+      const ZeileTemp = new Map()
+      this.TableBearbeiten.ZeileTemp.zeile = []
       for (let key = 1; key <= this.FirstZeileLength; key++) {
-        this.TableBearbeiten.ZeileTemp.zeile.set(key, new Zelle())
+        ZeileTemp.set(key, new Zelle())
+      }
+
+      for (
+        let index = 1;
+        index <= this.TableBearbeiten.Einfügen.Zeilen.Anzahl;
+        index++
+      ) {
+        this.TableBearbeiten.ZeileTemp.zeile.push(ZeileTemp)
       }
     },
     CheckZeile() {
+      const { Zeile, Anzahl } = this.TableBearbeiten.Einfügen.Zeilen
+      const { höhe } = this.TabelenGröße
+
       switch (true) {
-        case this.TableBearbeiten.Einfügen.Zeilen.Zeile <= 0 ||
-          this.TableBearbeiten.Einfügen.Zeilen.Zeile > this.TabelenGröße.höhe:
+        case Zeile <= 0 || Zeile > höhe:
           this.TableBearbeiten.Error = "Diese Zeile ist nicht vorhanden"
 
           return false
-        case this.TableBearbeiten.Einfügen.Zeilen.Anzahl <= 0:
+        case Anzahl <= 0:
           this.TableBearbeiten.Error = "Diese Anzahl ist nicht vorhanden"
           return false
         default:
@@ -446,107 +433,189 @@ export const UseMainStore = defineStore("csv", {
     },
 
     ZeilenTauschenAufrufen() {
+      this.SetAllSectonsFalse()
       this.TableBearbeiten.Sections.ZeileTauschen = true
-      this.TableBearbeiten.Sections.ZeileEinfügen = false
-      this.TableBearbeiten.Sections.SpalteTauschen = false
-      this.TableBearbeiten.Sections.SpalteEinfügen = false
-      this.TableBearbeiten.Sections.ZellenTauschen = false
-      this.TableBearbeiten.Sections.Aside = false
-    },
-    ZeilenTauschen(state) {
-      let temp = []
-
-      state.currentTabelle.data[
-        state.bearbeiten.tauschen.zeilen.erste - 1
-      ].forEach((item, i) => {
-        temp.push(item.zellenInhalt)
-
-        item.zellenInhalt =
-          state.currentTabelle.data[
-            state.bearbeiten.tauschen.zeilen.zweite - 1
-          ][i].zellenInhalt
-
-        state.currentTabelle.data[state.bearbeiten.tauschen.zeilen.zweite - 1][
-          i
-        ].zellenInhalt = temp[i]
-      })
     },
 
+    CheckZeilenTauschen() {
+      const { Erste, Zweite } = this.TableBearbeiten.Tauschen.Zeilen
+      const { höhe } = this.TabelenGröße
+
+      switch (true) {
+        case Erste <= 0 || Zweite <= 0:
+          this.TableBearbeiten.Error = "Diese Zeile ist nicht vorhanden"
+
+          return false
+        case Erste > höhe || Zweite > höhe:
+          this.TableBearbeiten.Error = "Diese Zeile ist nicht vorhanden"
+
+          return false
+        case Erste === Zweite:
+          this.TableBearbeiten.Error =
+            "Diese Zeilen Können nicht getauscht werden"
+
+          return false
+        default:
+          return true
+      }
+    },
+
+    ZeilenTauschen() {
+      if (this.CheckZeilenTauschen()) {
+        this.InitZeilenTauschen()
+      }
+    },
+    InitZeilenTauschen() {
+      let temp
+      const { Erste, Zweite } = this.TableBearbeiten.Tauschen.Zeilen
+      const ZweiteZeile = this.CurrentTableTableData.get(Zweite)
+      temp = this.CurrentTableTableData.get(Erste)
+
+      this.CurrentTable.TableData.set(Erste, ZweiteZeile)
+      this.CurrentTable.TableData.set(Zweite, temp)
+    },
     // Spalten bearbeiten
 
     GetOptionSpalte(e) {
-      const { value } = e
-      console.log(value)
-      this.TableBearbeiten.Einfügen.Spalten.Position
+      const Pos = e.target.value
+
+      this.TableBearbeiten.Einfügen.Spalten.Position = Pos
     },
     SpaltenEinfügenAufrufen() {
+      this.SetAllSectonsFalse()
       this.TableBearbeiten.Sections.SpalteEinfügen = true
-      this.TableBearbeiten.Sections.ZeileTauschen = false
-      this.TableBearbeiten.Sections.ZeileEinfügen = false
-      this.TableBearbeiten.Sections.SpalteTauschen = false
-      this.TableBearbeiten.Sections.ZellenTauschen = false
-      this.TableBearbeiten.Sections.Aside = false
     },
 
-    SpaltenEinfügen(state) {
-      console.log(state.bearbeiten.spalten)
-      const spaltenPos = state.bearbeiten.spalten.spalten - 1
-      if (spaltenPos == 0 && state.bearbeiten.spalten.position == "L") {
-        for (let i = 0; i < state.bearbeiten.spalten.anzahl; i++) {
-          state.currentTabelle.data.forEach((zeilen, i) => {
-            zeilen.unshift(new Zelle(""))
-          })
-        }
-      } else if (
-        spaltenPos == state.TabelenGröße.breite - 1 &&
-        state.bearbeiten.spalten.position == "R"
-      ) {
-        for (let i = 0; i < state.bearbeiten.spalten.anzahl; i++) {
-          state.currentTabelle.data.forEach((zeilen, i) => {
-            zeilen.push(new Zelle())
-          })
-        }
-      } else {
-        Store.commit("GetIsertIndexSpalte", spaltenPos)
-        for (let i = 0; i < state.bearbeiten.spalten.anzahl; i++) {
-          state.currentTabelle.data.forEach((zeilen, i) => {
-            zeilen.splice(
-              state.bearbeiten.SpalteTemp.InsertPositon,
-              0,
-              new Zelle()
-            )
-          })
-        }
+    SpaltenEinfügen() {
+      if (this.CheckSpalte()) {
+        this.GetIsertIndexSpalte()
+        this.InsetElenemtsSpalte()
       }
     },
-    GetIsertIndexSpalte(state, pos) {
-      if (state.bearbeiten.spalten.position == "L") {
-        state.bearbeiten.SpalteTemp.InsertPositon = pos
-      } else {
-        state.bearbeiten.SpalteTemp.InsertPositon = pos + 1
+    CheckSpalte() {
+      const { Spalte, Anzahl } = this.TableBearbeiten.Einfügen.Spalten
+
+      switch (true) {
+        case Spalte <= 0 || Spalte > this.TabelenGröße.breite:
+          this.TableBearbeiten.Error = "Diese Spalte ist nicht vorhanden"
+
+          return false
+        case Anzahl <= 0:
+          this.TableBearbeiten.Error = "Diese Spalte ist nicht vorhanden"
+          return false
+        default:
+          return true
+      }
+    },
+
+    InsetElenemtsSpalte() {
+      let temp,
+        temp2 = new Map(),
+        ZeileKey = 1
+      const { Spalte, Anzahl } = this.TableBearbeiten.Einfügen.Spalten
+      temp = this.CurrentTable.TableData
+
+      for (let key of this.range(this.TabelenGröße.höhe)) {
+        temp2.set(key, new Map())
+      }
+
+      temp.forEach((Zellen, ZeilenKey) => {
+        Zellen.forEach((Zelle, Zellenkey) => {
+          if (Zellenkey <= this.TableBearbeiten.SpalteTemp.InsertPositon) {
+            temp2.get(ZeilenKey).set(Zellenkey, Zelle)
+            temp.get(ZeilenKey).delete(Zellenkey)
+          }
+        })
+      })
+
+      for (const iterator of this.range(Anzahl)) {
+        temp2.forEach((Zellen, ZeilenKey) => {
+          Zellen.set(Zellen.size + 1, new Zelle())
+        })
+      }
+
+      temp.forEach((Zellen, ZeilenKey) => {
+        Zellen.forEach((Zelle, Zellenkey) => {
+          let Size = temp2.get(ZeilenKey).size
+          temp2.get(ZeilenKey).set(Size + 1, Zelle)
+        })
+      })
+
+      this.CurrentTable.TableData = temp2
+    },
+    GetIsertIndexSpalte() {
+      const { Position, Spalte } = this.TableBearbeiten.Einfügen.Spalten
+
+      switch (Position) {
+        case "L":
+          this.TableBearbeiten.SpalteTemp.InsertPositon = Spalte - 1
+          break
+        case "R":
+          this.TableBearbeiten.SpalteTemp.InsertPositon = Spalte
+          break
       }
     },
     SpaltenTauschenAufrufen() {
+      this.SetAllSectonsFalse()
       this.TableBearbeiten.Sections.SpalteTauschen = true
-      this.TableBearbeiten.Sections.ZeileTauschen = false
-      this.TableBearbeiten.Sections.ZeileEinfügen = false
-      this.TableBearbeiten.Sections.SpalteEinfügen = false
-      this.TableBearbeiten.Sections.ZellenTauschen = false
-      this.TableBearbeiten.Sections.Aside = false
     },
-    SpaltenTauschen(state) {
-      let temp = []
-      state.currentTabelle.data.forEach((zeile, i) => {
-        temp.push(
-          zeile[state.bearbeiten.tauschen.spalten.erste - 1].zellenInhalt
-        )
-        zeile[state.bearbeiten.tauschen.spalten.erste - 1].zellenInhalt =
-          zeile[state.bearbeiten.tauschen.spalten.zweite - 1].zellenInhalt
-        zeile[state.bearbeiten.tauschen.spalten.zweite - 1].zellenInhalt =
-          temp[i]
+    CheckSpalteTauschen() {
+      const { Erste, Zweite } = this.TableBearbeiten.Tauschen.Spalten
+      const { breite } = this.TabelenGröße
+
+      switch (true) {
+        case Erste <= 0 || Zweite <= 0:
+          this.TableBearbeiten.Error = "Diese Spalte ist nicht vorhanden"
+
+          return false
+        case Erste > breite || Zweite > breite:
+          this.TableBearbeiten.Error = "Diese Spalte ist nicht vorhanden"
+
+          return false
+        case Erste === Zweite:
+          this.TableBearbeiten.Error =
+            "Diese Spalte Können nicht getauscht werden"
+
+          return false
+        default:
+          return true
+      }
+    },
+    SpaltenTauschen() {
+      if (this.CheckSpalteTauschen()) {
+        this.InitSpaltenTauschen()
+      }
+    },
+    InitSpaltenTauschen() {
+      const { Erste, Zweite } = this.TableBearbeiten.Tauschen.Spalten
+      let temp = new Map()
+
+      for (let key of this.range(this.TabelenGröße.höhe)) {
+        temp.set(key, new Map())
+      }
+
+      this.CurrentTableTableData.forEach((Zeile, ZeilenKey) => {
+        Zeile.forEach((Zelle, ZellenKey) => {
+          if (ZellenKey === Erste) {
+            temp.get(ZeilenKey).set(ZellenKey, Zelle)
+          }
+        })
+      })
+
+      this.CurrentTableTableData.forEach((Zeile, ZeilenKey) => {
+        Zeile.forEach((Zelle, ZellenKey) => {
+          if (ZellenKey === Zweite) {
+            this.CurrentTable.TableData.get(ZeilenKey).set(Erste, Zelle)
+          }
+        })
+      })
+
+      temp.forEach((Zeile, ZeilenKey) => {
+        Zeile.forEach((Zelle, ZellenKey) => {
+          this.CurrentTable.TableData.get(ZeilenKey).set(Zweite, Zelle)
+        })
       })
     },
-
     // Download File
 
     async mDownlodFile(TableIndex) {
@@ -611,60 +680,32 @@ export const UseMainStore = defineStore("csv", {
 
     // Uploade File
 
-    CreateTabel() {
-      const TableData = this.CreateTableData()
+    CreateTable(FileName, FileData) {
+      const NewTable = new Table(FileName)
+      NewTable.CreateTableData(FileData)
 
-      const Tabell = new Table(this.UploadeFile.fileName, TableData)
-      this.CurrentTables.unshift(Tabell)
-
-      this.CurrentTabelleID = 0
-      this.CurrentTable.TableName = Tabell.TableName
-      this.CurrentTable.TableData = Tabell.TableData
-
-      console.log(this.CurrentTable)
-    },
-
-    CreateTableData() {
-      const TableData = new Map()
-
-      this.UploadeFile.data.forEach((Zeile, ZeileIndex) => {
-        const zeile = new Map()
-
-        TableData.set(ZeileIndex + 1, zeile)
-
-        Zeile.forEach((item, ZellenIndex) => {
-          zeile.set(ZellenIndex + 1, new Zelle(item.trim()))
-        })
-      })
-
-      return TableData
+      this.CurrentTables.push(NewTable)
+      this.GetSelectTabel(this.CurrentTables.length - 1)
     },
 
     async GetFileData(e) {
       const [File] = await e.target.files
 
-      this.UploadeFile.fileName = await File.name.slice(0, -4)
+      const FileName = await File.name.slice(0, -4)
 
       const content = await File.text()
       const { data } = papa.parse(content)
 
-      this.UploadeFile.data = data
-
-      this.CreateTabel()
+      this.CreateTable(FileName, data)
     },
 
     // Zellen bearbeiten
 
     InitZelleBerarbeiten(Zeile, Spalte, Zelleninhalt) {
-      const SelectetZelle = {
-        Zeile,
-        Spalte,
-        Zelleninhalt,
-      }
-
+      console.log(Zeile, Spalte, Zelleninhalt)
       this.SaveLastZelle()
 
-      this.SetCurrentZelle(SelectetZelle)
+      this.SetCurrentZelle(Zeile, Spalte, Zelleninhalt)
 
       this.SetFocusedZelle()
     },
@@ -672,37 +713,65 @@ export const UseMainStore = defineStore("csv", {
     SaveLastZelle() {
       this.CurrentTable.LastZelle.Zeile = this.CurrentTable.CurrentZelle.Zeile
 
-      this.CurrentTable.LastZelle.Spalten =
-        this.CurrentTable.CurrentZelle.Spalten
+      this.CurrentTable.LastZelle.Spalte = this.CurrentTable.CurrentZelle.Spalte
 
       this.CurrentTable.LastZelle.ZellenInhalt =
         this.CurrentTable.CurrentZelle.ZellenInhalt
 
       this.CurrentTable.LastZelle.Activ = this.CurrentTable.CurrentZelle.Activ
     },
-    SetCurrentZelle(SelectetZelle) {
-      this.CurrentTable.CurrentZelle.Zeile = SelectetZelle.Zeile
+    SetCurrentZelle(Zeile, Spalte, Zelleninhalt) {
+      this.CurrentTable.CurrentZelle.Zeile = Zeile
 
-      this.CurrentTable.CurrentZelle.Spalten = SelectetZelle.Spalte
+      this.CurrentTable.CurrentZelle.Spalte = Spalte
 
-      this.CurrentTable.CurrentZelle.ZellenInhalt = SelectetZelle.Zelleninhalt
+      this.CurrentTable.CurrentZelle.ZellenInhalt = Zelleninhalt
     },
     SetFocusedZelle() {
       this.CurrentTable.TableData.get(this.CurrentTable.CurrentZelle.Zeile).get(
-        this.CurrentTable.CurrentZelle.Spalten
+        this.CurrentTable.CurrentZelle.Spalte
       ).Activ = true
 
       this.CurrentTable.TableData.get(this.CurrentTable.LastZelle.Zeile).get(
-        this.CurrentTable.LastZelle.Spalten
+        this.CurrentTable.LastZelle.Spalte
       ).Activ = false
     },
     SetZellenValue() {
       this.CurrentTable.TableData.get(this.CurrentTable.CurrentZelle.Zeile).get(
-        this.CurrentTable.CurrentZelle.Spalten
+        this.CurrentTable.CurrentZelle.Spalte
       ).ZellenInhalt = this.CurrentTable.CurrentZelle.ZellenInhalt
     },
 
     // selcet get set values
+    range(end, start = 1, step = 1) {
+      const result = []
+
+      if (step === 0) {
+        throw new Error("Schrittweite darf nicht 0 sein.")
+      }
+
+      if (start < end) {
+        for (let i = start; i <= end; i += step) {
+          result.push(i)
+        }
+      } else {
+        for (let i = start; i >= end; i += step) {
+          result.push(i)
+        }
+      }
+
+      return result
+    },
+    SetAllSectonsFalse() {
+      this.TableBearbeiten.Sections.ZeileEinfügen = false
+      this.TableBearbeiten.Sections.SpalteTauschen = false
+      this.TableBearbeiten.Sections.SpalteEinfügen = false
+      this.TableBearbeiten.Sections.ZeileTauschen = false
+      this.TableBearbeiten.Sections.ZellenTauschen = false
+      this.TableBearbeiten.Sections.Aside = false
+      this.TableBearbeiten.Error = undefined
+    },
+
     SetCurrentTabelName() {
       this.CurrentTables[this.CurrentTabelleID].TableName =
         this.CurrentTable.TableName
@@ -714,38 +783,46 @@ export const UseMainStore = defineStore("csv", {
     GetSelectTabel(TableIndex) {
       this.CurrentTabelleID = TableIndex
 
-      this.CurrentTable = this.CurrentTables[this.CurrentTabelleID]
+      this.CurrentTable = this.CurrentTables[TableIndex]
     },
 
-    SetApiUrlUserTabellen(state) {
-      if (localStorage.length > 0) {
-        this.state.LoginBTN = false
-        this.state.SingelUpBTN = false
-        this.state.LogoutBTN = true
-        const User = JSON.parse(localStorage.getItem("User"))
-
-        state.ApiURLs.ApiUrlUserTabellen = `https://csvdb.onrender.com/users/${User.Username}/Tabellen`
-      }
+    async SetApiUrlUserTables() {
+      this.ApiURLs.ApiUrlUserTablen = `http://localhost:8080/user/${this.UserData._id}/tables`
+      this.ApiURLs.ApiUrlDeletTable = `http://localhost:8080/user/${this.UserData._id}/tables/`
     },
 
     async Abmelden() {
       localStorage.clear()
     },
-
+    async CheckLogin() {
+      if (sessionStorage.length >= 1) {
+        const AnmeldeData = await JSON.parse(sessionStorage.getItem("Csv"))
+        this.Anmelden = AnmeldeData
+        await this.mAnmelden()
+      } else if (localStorage.length >= 1) {
+        const AnmeldeData = await JSON.parse(localStorage.getItem("Csv"))
+        this.Anmelden = AnmeldeData
+        this.AngemedetBleiben = true
+        await this.mAnmelden()
+      }
+    },
     //Anmelden
     async mAnmelden() {
       try {
         const res = await axios.post(
           this.ApiURLs.ApiUrlUsersAnmelden,
           this.Anmelden,
-          { withCredentials: true, baseURL: "http://localhost:8080" }
+          this.ApiURLs.requestOptions
         )
 
-        if (res.status == 200) {
+        if (res.status == 202) {
           this.AnmeldenCheck = res.data
         } else if (res.status == 201) {
-          this.UserData = res.data
-          console.log(this.UserData)
+          this.UserData = {
+            Username: res.data.Username,
+            _id: res.data._id,
+          }
+
           if (this.AngemedetBleiben) {
             const DataAnmelden = JSON.stringify(this.Anmelden)
             localStorage.setItem("Csv", DataAnmelden)
@@ -792,22 +869,14 @@ export const UseMainStore = defineStore("csv", {
 
     async GetTabels() {
       try {
-        const res = await fetch(this.state.ApiURLs.ApiUrlUserTabellen, {
-          mode: "cors",
-        })
+        const res = await axios.get(
+          this.ApiURLs.ApiUrlUserTablen,
+          this.ApiURLs.requestOptions
+        )
+        let SendTables = await res.data
 
-        this.state.currentTabelles = await res.json()
-
-        this.state.currentTabelle.TabelName =
-          this.state.currentTabelles[0].TabelName
-
-        this.state.currentTabelle.data = this.state.currentTabelles[0].data
-
-        this.state.currentTabelle.currentZelle =
-          this.state.currentTabelles[0].currentZelle
-
-        this.state.currentTabelle.lastZelle =
-          this.state.currentTabelles[0].lastZelle
+        this.CurrentTables = Table.PrepareTableToStore(SendTables)
+        this.GetSelectTabel(0)
       } catch (e) {
         console.error(e.message)
       }
@@ -815,47 +884,34 @@ export const UseMainStore = defineStore("csv", {
 
     async SaveTabels() {
       try {
-        const tabels = this.state.currentTabelles
-        const json = JSON.stringify(tabels)
+        const SendTables = Table.PrepareTableToSend(this.CurrentTables)
 
-        const optons = {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          mode: "cors",
-          body: json,
-        }
-
-        const res = await fetch(this.state.ApiURLs.ApiUrlUserTabellen, optons)
+        const res = await axios.patch(
+          this.ApiURLs.ApiUrlUserTablen,
+          {
+            CurrentTables: SendTables,
+          },
+          this.ApiURLs.requestOptions
+        )
         console.log(res)
+        return res.statusText
       } catch (e) {
         console.error(e.message)
       }
     },
 
-    async Delettabel() {
+    async DeletTable(TableID) {
       try {
-        const TabelleInfo = {
-          id: this.state.currentTabelleID,
+        const res = await axios.delete(
+          this.ApiURLs.ApiUrlDeletTable + TableID,
+          this.ApiURLs.requestOptions
+        )
+        if (res.status == 200) {
+          await this.GetTabels()
         }
-        const json = JSON.stringify(TabelleInfo)
-
-        const optons = {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          mode: "cors",
-          body: json,
-        }
-
-        const res = await fetch(this.state.ApiURLs.ApiUrlUserTabellen, optons)
       } catch (e) {
         console.log(e.message)
       }
-    },
-
-    async InitDelet() {
-      await this.Delettabel()
-
-      await Store.dispatch("GetTabels")
     },
   },
 })

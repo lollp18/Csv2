@@ -4,8 +4,10 @@ import { UseMainStore } from "../stores/MainStore.js"
 const store = UseMainStore()
 </script>
 <template>
-  <div  class="BtnDelet">
-    <ion-icon name="close-outline"></ion-icon>
+  <div class="BtnDelet">
+    <ion-icon
+      aria-hidden="true"
+      name="close-outline"></ion-icon>
   </div>
 </template>
 <style scoped lang="sass">

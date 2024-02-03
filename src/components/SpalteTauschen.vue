@@ -15,7 +15,7 @@ const store = UseMainStore()
       v-model="store.TableBearbeiten.Tauschen.Spalten.Zweite"
       placeholder="spalte eintragen"
       type="number" />
-    <button class="BtnAddBearbeiten" @click="store.SpaltenTauschen">
+    <button class="BtnAddBearbeiten" @click="store.SpaltenTauschen()">
       <ion-icon name="swap-horizontal-outline"></ion-icon>
     </button>
   </div>
