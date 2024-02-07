@@ -1,15 +1,8 @@
 <script setup>
 import { UseMainStore } from "../stores/MainStore.js"
-import BtnDelet from "./BtnDelet.vue"
 const store = UseMainStore()
 </script>
-<script>
-export default {
-  components: {
-    BtnDelet,
-  },
-}
-</script>
+
 <template>
   <footer>
     <div class="auswahl-container">
@@ -22,7 +15,7 @@ export default {
         </button>
         <button
           class="BtnDeletTable"
-          @click="store.DeletTable(TableIndex)">
+          @click="store.DeleteTable(TableIndex)">
           <ion-icon name="close-outline"></ion-icon>
         </button>
         <a
@@ -58,7 +51,7 @@ export default {
       <button
         v-if="
           store.SeitenVerwenden.CurrentSeite.Zahl <=
-          store.SeitenVerwenden.currentSeiten.length - 1
+          store.SeitenVerwenden.CurrentSeiten.length - 1
         "
         @click="store.SeiteVor()">
         <ion-icon name="chevron-forward-outline"></ion-icon>
@@ -66,7 +59,7 @@ export default {
       <button
         v-if="
           store.SeitenVerwenden.CurrentSeite.Zahl <=
-          store.SeitenVerwenden.currentSeiten.length - 1
+          store.SeitenVerwenden.CurrentSeiten.length - 1
         "
         @click="store.SeiteLast()">
         Last

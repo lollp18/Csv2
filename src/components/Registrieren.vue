@@ -3,9 +3,7 @@ import { UseMainStore } from "../stores/MainStore.js"
 
 const store = UseMainStore()
 </script>
-<script>
-export default {}
-</script>
+
 <template>
   <div class="FormRapper">
     <form>

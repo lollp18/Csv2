@@ -1,6 +1,6 @@
 <template>
   <div>
-    <p>Hir Erscheint ihr Table</p>
+    <p>Hier Erscheint ihr Table</p>
   </div>
 </template>
 <style scoped lang="sass">

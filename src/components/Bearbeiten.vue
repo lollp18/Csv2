@@ -7,9 +7,6 @@ import ZeilenTauschen from "./ZeilenTauschen.vue"
 import ZellenTauschen from "./ZellenTauschen.vue"
 
 const store = UseMainStore()
-
-
-
 </script>
 <script>
 export default {
@@ -156,7 +153,4 @@ aside
   div
    display: flex
    gap: 1rem
-
-
-
 </style>

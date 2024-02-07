@@ -26,7 +26,7 @@ const store = UseMainStore()
       type="number"
       placeholder="Spaltenummer" />
 
-    <button class="BtnAddBearbeiten" @click="store.ZellenTauschen">
+    <button class="BtnAddBearbeiten" @click="store.ZellenTauschen()">
       <ion-icon name="swap-horizontal-outline"></ion-icon>
     </button>
   </div>

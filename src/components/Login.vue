@@ -1,31 +1,20 @@
 <script setup>
 import { UseMainStore } from "../stores/MainStore.js"
-import TableLite from "vue3-table-lite";
 const store = UseMainStore()
 </script>
-<script>
-export default {
-  components: {},
-}
-</script>
+
 <template>
-  <div class="FormRapper">
+  <div class="FormWrapper">
     <form>
-      <div
-        style="
-          display: flex;
-          justify-content: center;
-          font-size: medium;
-          color: red;
-        ">
+      <span class="error-message">
         {{ store.AnmeldenCheck }}
-      </div>
+      </span>
       <input
-        class="new-Tabel-input"
+        class="new-Table-input"
         v-model="store.Anmelden.Email"
         placeholder="Email" />
       <input
-        class="new-Tabel-input"
+        class="new-Table-input"
         v-model="store.Anmelden.Passwort"
         placeholder="Passwort" />
 
@@ -37,7 +26,7 @@ export default {
 
       <router-link
         :to="{ name: 'Registrieren' }"
-        class="router-link">
+        class="router-link btn">
         Registrieren
       </router-link>
 
@@ -48,33 +37,40 @@ export default {
     </form>
   </div>
 </template>
-<style scoped lang="sass">
 
+<style scoped lang="sass">
 @import "../Style.sass"
-.FormRapper
+
+.FormWrapper
   @include Center()
   width: 100%
   height: 100%
-input
-  font-size: 1.8rem
-button
-  font-size: 1.8rem
 
 form
   @include Center()
   @include DreiD()
   flex-direction: column
   background-color: $MainColor
-
   gap: 3rem
   padding: 4rem 4rem
   height: 40rem
   width: 50rem
   border-radius: 10px
   font-size: 1.8rem
-.router-link
+
+.error-message
+  display: flex
+  justify-content: center
+  font-size: 1.6rem
+  color: red
+
+input
+  font-size: 1.8rem
+
+button, .router-link
+  font-size: 1.8rem
   @include Button()
-  text-decoration: none
+
 .checkbox
   width: 2rem
 </style>

@@ -1,8 +1,3 @@
-<script setup>
-import { UseMainStore } from "../stores/MainStore.js"
-
-const store = UseMainStore()
-</script>
 <template>
   <div class="BtnDelet">
     <ion-icon

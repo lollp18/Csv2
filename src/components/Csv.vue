@@ -1,27 +1,25 @@
 <script setup>
 import { UseMainStore } from "../stores/MainStore.js"
-import {
-  ref,
-  nextTick,
-  onMounted,
-  onBeforeMount,
-  onUpdated,
-  onUnmounted,
-} from "vue"
+import { nextTick, onMounted, onBeforeMount, onUpdated, onUnmounted } from "vue"
 
+// Compnents
+import NewTable from "./NewTable.vue"
+import Bearbeiten from "./Bearbeiten.vue"
+import Header from "./Header.vue"
+import Table from "./Table.vue"
+import NoTable from "./NoTable.vue"
+import Footer from "./Footer.vue"
 const store = UseMainStore()
-store.$subscribe(async () => {
 
-})
 onBeforeMount(async () => {
   await store.CheckLogin()
   await store.SetApiUrlUserTables()
-  await store.GetTabels()
+  await store.GetTables()
 })
 
 onUpdated(() => {
   nextTick(() => {
-    store.SaveTabels()
+    store.SaveTables()
     store.InitSeitenBerechnen()
     store.SetCurrentSeiteFirst()
   })
@@ -41,31 +39,6 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener("resize")
 })
-</script>
-
-<script>
-// Compnents
-
-import NewTable from "./NewTable.vue"
-import Bearbeiten from "./Bearbeiten.vue"
-import Header from "./Header.vue"
-import Table from "./Table.vue"
-import NoTable from "./NoTable.vue"
-import Footer from "./Footer.vue"
-
-// Others
-
-import { ref } from "vue"
-
-export default {
-  methods: {
-    // check and set
-
-    ResteFile() {
-      this.$refs.fileInput.value = null
-    },
-  },
-}
 </script>
 
 <template>
