@@ -4,6 +4,7 @@ import router from "../router/index.js"
 import { Table, Zelle } from "../components/Classes.js"
 
 import papa from "papaparse"
+import { ref } from "vue"
 export const UseMainStore = defineStore("csv", {
   state: () => ({
     UserData: undefined,
@@ -16,6 +17,12 @@ export const UseMainStore = defineStore("csv", {
     TabelenGröße: {
       höhe: 0,
       breite: 0,
+    },
+
+    ConfirmationWindow: {
+      ConfirmationWindowOpen: false,
+      Text: "",
+      Temlate: "",
     },
 
     // Uploade Download CSV File
@@ -153,6 +160,25 @@ export const UseMainStore = defineStore("csv", {
     name: (state) => state,
   },
   actions: {
+    ConfirmationWindowOpen(Text, callback) {
+      this.ConfirmationWindow.Text = Text
+      this.ConfirmationWindow.Temlate = `
+      <button @click="${this.ConfirmationWindowConfirm(
+        callback
+      )}">
+      <ion-icon name="checkmark-outline"></ion-icon>
+    </button>`
+      this.ConfirmationWindow.ConfirmationWindowOpen = true
+    },
+    ConfirmationWindowClose() {
+      this.ConfirmationWindow = false
+      this.ConfirmationWindowText = ""
+      this.ConfirmationWindowCheck = false
+    },
+    ConfirmationWindowConfirm(callback) {
+      callback()
+      this.ConfirmationWindowClose()
+    },
     InitSeitenBerechnen() {
       this.SetTabelSize()
       this.BrechneMax()

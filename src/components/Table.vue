@@ -7,10 +7,10 @@ import {
   onUpdated,
   onUnmounted,
 } from "vue"
+
 import { UseMainStore } from "../stores/MainStore.js"
 import BtnDelet from "./BtnDelet.vue"
 const store = UseMainStore()
-
 </script>
 
 <template>

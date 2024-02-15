@@ -64,12 +64,14 @@ form
   font-size: 1.6rem
   color: red
 
-input
-  font-size: 1.8rem
 
-button, .router-link
-  font-size: 1.8rem
+
+
+button,.router-link,input
   @include Button()
+
+  font-size: 1.8rem
+  text-decoration: none
 
 .checkbox
   width: 2rem
