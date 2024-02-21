@@ -1,11 +1,11 @@
-<script>
+<script setup>
 import { RouterView } from "vue-router"
-
-export default {
-  components: {
-    RouterView,
-  },
-}
+import { onBeforeMount } from "vue"
+import { UseMainStore } from "./stores/MainStore.js"
+const store = UseMainStore()
+onBeforeMount(() => {
+  store.SetCurrentURL(store.ApiURLs.BaseUrl)
+})
 </script>
 
 <template>
@@ -58,7 +58,7 @@ h1
   margin: 0
   padding: 0
   overflow: hidden
-  
+
 html
   font-size: 62.5%
   overflow: hidden
@@ -85,6 +85,4 @@ body
   text-rendering: optimizeLegibility
   -webkit-font-smoothing: antialiased
   -moz-osx-font-smoothing: grayscale
-
-
 </style>

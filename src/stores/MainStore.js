@@ -133,13 +133,17 @@ export const UseMainStore = defineStore("csv", {
     },
 
     ApiURLs: {
-      ApiUrlUsersRegistrieren: "http://localhost:8080/auth/registrieren",
-      ApiUrlUsersAnmelden: "http://localhost:8080/auth/login",
+      CurrentUrl: "",
+      BaseUrl: "https://csvdb2.cyclic.app/",
+      BaseUrlLocl: "http://localhost:8080/",
+
+      ApiUrlUsersRegistrieren: "auth/registrieren",
+      ApiUrlUsersAnmelden: "auth/login",
       ApiUrlUserTablen: undefined,
       ApiUrlDeletTable: undefined,
       requestOptions: {
         withCredentials: true,
-        baseURL: "http://localhost:8080",
+        baseURL: "",
       },
     },
   }),
@@ -163,9 +167,7 @@ export const UseMainStore = defineStore("csv", {
     ConfirmationWindowOpen(Text, callback) {
       this.ConfirmationWindow.Text = Text
       this.ConfirmationWindow.Temlate = `
-      <button @click="${this.ConfirmationWindowConfirm(
-        callback
-      )}">
+      <button @click="${this.ConfirmationWindowConfirm(callback)}">
       <ion-icon name="checkmark-outline"></ion-icon>
     </button>`
       this.ConfirmationWindow.ConfirmationWindowOpen = true
@@ -774,12 +776,22 @@ export const UseMainStore = defineStore("csv", {
 
       this.CurrentTable = this.CurrentTables[TableIndex]
     },
+    SetCurrentURL(ApiString) {
+      this.ApiURLs.CurrentUrl = ApiString
 
+      this.ApiURLs.ApiUrlUsersAnmelden =
+        ApiString + this.ApiURLs.ApiUrlUsersAnmelden
+
+      this.ApiURLs.ApiUrlUsersRegistrieren =
+        ApiString + this.ApiURLs.ApiUrlUsersRegistrieren
+
+      this.ApiURLs.requestOptions.baseURL = ApiString
+    },
     async SetApiUrlUserTables() {
       const { _id: userId } = this.UserData
-      const baseUrl = "http://localhost:8080/user/"
-      this.ApiURLs.ApiUrlUserTablen = `${baseUrl}${userId}/tables`
-      this.ApiURLs.ApiUrlDeletTable = `${baseUrl}${userId}/tables/`
+      const UserUrl = this.ApiURLs.CurrentUrl + "user/"
+      this.ApiURLs.ApiUrlUserTablen = `${UserUrl}${userId}/tables`
+      this.ApiURLs.ApiUrlDeletTable = `${UserUrl}${userId}/tables/`
     },
     async Abmelden() {
       localStorage.clear()
