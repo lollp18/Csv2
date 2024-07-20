@@ -134,7 +134,7 @@ export const UseMainStore = defineStore("csv", {
 
     ApiURLs: {
       CurrentUrl: "",
-      BaseUrl: "https://csvdb2.cyclic.app/",
+      BaseUrl: "https://csv-db-2.vercel.app/",
       BaseUrlLocl: "http://localhost:8080/",
 
       ApiUrlUsersRegistrieren: "auth/registrieren",
