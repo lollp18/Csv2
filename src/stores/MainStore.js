@@ -4,7 +4,6 @@ import router from "../router/index.js"
 import { Table, Zelle } from "../components/Classes.js"
 
 import papa from "papaparse"
-import { ref } from "vue"
 export const UseMainStore = defineStore("csv", {
   state: () => ({
     UserData: undefined,
@@ -733,10 +732,11 @@ export const UseMainStore = defineStore("csv", {
       ).Activ = true
       this.CurrentTable.TableData.get(lastZeile).get(lastSpalte).Activ = false
     },
-    SetZellenValue() {
+    async SetZellenValue() {
       const { Zeile, Spalte, ZellenInhalt } = this.CurrentTable.CurrentZelle
       this.CurrentTable.TableData.get(Zeile).get(Spalte).ZellenInhalt =
         ZellenInhalt
+      await this.SaveTables()
     },
     // selcet get set values
     range(start, end, step = 1) {

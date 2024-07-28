@@ -1,6 +1,13 @@
 <script setup>
 import { UseMainStore } from "../stores/MainStore.js"
-import { nextTick, onMounted, onBeforeMount, onUpdated, onUnmounted } from "vue"
+import {
+  nextTick,
+  onMounted,
+  onBeforeMount,
+  onUpdated,
+  onUnmounted,
+  watch,
+} from "vue"
 
 // Compnents
 import ConfirmationWindow from "./ConfirmationWindow.vue"
@@ -19,15 +26,15 @@ onBeforeMount(async () => {
   await store.GetTables()
 })
 
-onUpdated(() => {
-  nextTick(() => {
-    store.SaveTables()
+onUpdated(async () => {
+  nextTick(async () => {
+    await store.SaveTables()
     store.InitSeitenBerechnen()
     store.SetCurrentSeiteFirst()
   })
 })
 
-onMounted(() => {
+onMounted(async () => {
   nextTick(() => {
     store.InitSeitenBerechnen()
     store.SetCurrentSeiteFirst()
@@ -41,6 +48,18 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener("resize")
 })
+watch(
+  () => ({
+    CurrentTables: store.CurrentTables,
+    CurrentTable: store.CurrentTable,
+  }),
+  () => {
+    store.SaveTables()
+    store.InitSeitenBerechnen()
+    store.SetCurrentSeiteFirst()
+  },
+  { deep: true }
+)
 </script>
 
 <template>
