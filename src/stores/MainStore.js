@@ -163,23 +163,7 @@ export const UseMainStore = defineStore("csv", {
     name: (state) => state,
   },
   actions: {
-    ConfirmationWindowOpen(Text, callback) {
-      this.ConfirmationWindow.Text = Text
-      this.ConfirmationWindow.Temlate = `
-      <button @click="${this.ConfirmationWindowConfirm(callback)}">
-      <ion-icon name="checkmark-outline"></ion-icon>
-    </button>`
-      this.ConfirmationWindow.ConfirmationWindowOpen = true
-    },
-    ConfirmationWindowClose() {
-      this.ConfirmationWindow = false
-      this.ConfirmationWindowText = ""
-      this.ConfirmationWindowCheck = false
-    },
-    ConfirmationWindowConfirm(callback) {
-      callback()
-      this.ConfirmationWindowClose()
-    },
+
     InitSeitenBerechnen() {
       this.SetTabelSize()
       this.BrechneMax()

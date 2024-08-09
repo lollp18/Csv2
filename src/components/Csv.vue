@@ -10,7 +10,6 @@ import {
 } from "vue"
 
 // Compnents
-import ConfirmationWindow from "./ConfirmationWindow.vue"
 import NewTable from "./NewTable.vue"
 import Bearbeiten from "./Bearbeiten.vue"
 import Header from "./Header.vue"
@@ -34,14 +33,13 @@ onUpdated(async () => {
   })
 })
 
-onMounted(async () => {
+onMounted(() => {
   nextTick(() => {
     store.InitSeitenBerechnen()
     store.SetCurrentSeiteFirst()
-
-    window.addEventListener("resize", () => {
-      store.ResizeWindow()
-    })
+  })
+  window.addEventListener("resize", () => {
+    store.ResizeWindow()
   })
 })
 
@@ -63,7 +61,6 @@ watch(
 </script>
 
 <template>
-  <ConfirmationWindow v-if="store.ConfirmationWindow.ConfirmationWindowOpen" />
   <Bearbeiten v-if="store.TableBearbeitenOpen" />
   <NewTable v-if="store.NewTableIsOpen" />
 

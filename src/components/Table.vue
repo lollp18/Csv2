@@ -1,13 +1,4 @@
 <script setup>
-import {
-  ref,
-  nextTick,
-  onMounted,
-  onBeforeMount,
-  onUpdated,
-  onUnmounted,
-} from "vue"
-
 import { UseMainStore } from "../stores/MainStore.js"
 import BtnDelet from "./BtnDelet.vue"
 const store = UseMainStore()
@@ -15,7 +6,7 @@ const store = UseMainStore()
 
 <template>
   <table>
-    <tr>
+    <tr class="tableHeader">
       <!-- Tabel Header BTN Delet -->
       <div class="rapperTop-btnDelet">
         <div class="zelle-placeholder"></div>
